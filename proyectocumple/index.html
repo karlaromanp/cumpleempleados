@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Birthdays</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+      color: #333;
+    }
+    header {
+      background: #0078d4;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    section {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px 0;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    button {
+      background: #0078d4;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #005bb5;
+    }
+    img {
+      width: 100%;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    ul li {
+      background: #0078d4;
+      color: white;
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Cumpleaños de empleados</h1>
+  </header>
+  <section>
+    <img src="imagen-cumpleños.jpg" alt="Birthday Banner">
+    <h2>Agrega un nuevo cumpleaños</h2>
+    <form id="birthdayForm">
+      <input type="text" id="name" placeholder="Nombre del empleado" required>
+      <input type="date" id="birthday" required>
+      <button type="submit">Guardar cumpleaños</button>
+    </form>
+    <h2>Cumpleaños de hoy</h2>
+    <ul id="birthdayList">
+      <!-- Birthdays will be dynamically added here -->
+    </ul>
+  </section>
+  <script>
+    const API_URL = 'https://api.sheetbest.com/sheets/e9ab670a-0ccd-437b-ac60-74ea29c7ca78'; // Replace with your Sheet.best endpoint
+
+    // Fetch today's birthdays
+    async function fetchBirthdays() {
+      const response = await fetch(API_URL);
+      const data = await response.json();
+      const today = new Date().toISOString().slice(5, 10); // MM-DD format
+      const todayBirthdays = data.filter(entry => entry.Birthday.slice(5, 10) === today);
+
+      const list = document.getElementById('birthdayList');
+      list.innerHTML = todayBirthdays.length
+        ? todayBirthdays.map(person => `<li>${person.Name}</li>`).join('')
+        : '<li>No hay cumpleaños hoy</li>';
+    }
+
+    // Add a new birthday
+    document.getElementById('birthdayForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('name').value;
+      const birthday = document.getElementById('birthday').value;
+
+      if (!name || !birthday) return alert('Por favor, llene todos los campos.');
+
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ Name: name, Birthday: birthday }),
+      });
+
+      if (response.ok) {
+        alert('El cumpleaños se guardó correctamente!');
+        fetchBirthdays();
+        document.getElementById('birthdayForm').reset();
+      } else {
+        alert('Error al guardar cumpleaños');
+      }
+    });
+
+    // Initial load
+    fetchBirthdays();
+  </script>
+</body>
+</html>
